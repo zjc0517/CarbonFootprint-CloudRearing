@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  api:
+    build: 
+      context: ..
+      dockerfile: deployment/Dockerfile
+    command: uvicorn code.api:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../code:/app/code
+    environment:
+      - DATABASE_URL=sqlite:///./carbon_rearing.db
+      - WEB3_RPC_URL=https://polygon-rpc.com
+      - WEB3_PRIVATE_KEY=${WEB3_PRIVATE_KEY} # 从宿主机 .env 文件读取
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    command: streamlit run visualization/app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../visualization:/app/visualization
+      - ../code:/app/code
+    depends_on:
+      - api
