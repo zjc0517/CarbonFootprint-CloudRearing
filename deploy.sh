@@ -88,5 +88,9 @@ if curl -s --head --request GET http://localhost:8501 | grep "200" > /dev/null; 
 else
     warn "❌ 仪表盘服务响应异常，请执行 'docker logs deployment-dashboard-1' 查看日志。"
 fi
+# 修改最后两行即可
+log "检查 API 状态..."
+# ...
+warn "❌ API 服务响应异常，请执行 'docker logs deployment-api-1' 查看日志。"
 
 log "🎉 部署任务顺利完成！"
