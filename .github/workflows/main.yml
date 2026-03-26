@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -10,19 +10,23 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4 # 升级到 v4 更稳定
+      
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest
+          pip install pytest pydantic fastapi sqlalchemy streamlit  # 确保所有依赖都在
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          
       - name: Run Pytest
+        # 这里的关键是：在根目录下运行，并把根目录加入 PYTHONPATH
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          # 关键修改点：路径已改为 carbon_engine
+          # 核心修复：通过调用模块的方式运行测试，确保 carbon_engine 被识别为 package
           python -m pytest carbon_engine/test_carbon_calculator.py
