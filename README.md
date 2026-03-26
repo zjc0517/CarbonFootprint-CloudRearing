@@ -59,7 +59,74 @@ $$I_{user} = [(A \times EF_{grass} + M \times EF_{manure}) - (E_{feed} + E_{ente
 
 ### 1. 环境准备
 确保已安装 Python 3.8 及以上版本。
+### 二、 核心代码实现 (`/code/carbon_calculator.py`)
+计算模块，严格按照要求处理负数和非法数据，确保数据合规：
 
+```python
+"""
+Carbon Footprint Calculation Module
+实现云养殖业务的碳资产核心计算逻辑。
+"""
+
+import logging
+
+# 配置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class CarbonCalculator:
+    """碳积分计算核心类，负责业务公式计算及边界验证"""
+    
+    @staticmethod
+    def validate_inputs(**kwargs):
+        """通用非负参数校验"""
+        for key, value in kwargs.items():
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"参数 {key} 必须是数字类型")
+            if value < 0:
+                raise ValueError(f"参数 {key} 不能为负数: {value}")
+            
+    @staticmethod
+    def calculate_carbon_credit(
+        A: float, EF_grass: float, M: float, EF_manure: float,
+        E_feed: float, E_enteric: float, E_energy: float,
+        W_user: float, T_hold: float
+    ) -> float:
+        """
+        计算用户专属的碳积分 (I_user)。
+        
+        参数:
+            A (float): 草场面积 (ha)
+            EF_grass (float): 草场固碳因子 (吨CO₂/ha)
+            ... (参数见 README 文档)
+        返回:
+            float: 用户专属的碳积分结果
+        """
+        # 1. 验证输入合法性
+        CarbonCalculator.validate_inputs(
+            A=A, EF_grass=EF_grass, M=M, EF_manure=EF_manure,
+            E_feed=E_feed, E_enteric=E_enteric, E_energy=E_energy,
+            W_user=W_user, T_hold=T_hold
+        )
+        
+        # 权限/持有比例验证 (W_user 应该在 0-1 之间)
+        if not (0 <= W_user <= 1):
+            raise ValueError(f"用户权益占比 W_user 必须在 [0, 1] 范围内，当前值为: {W_user}")
+
+        # 2. 固碳量计算 (Carbon Sink)
+        carbon_sink = (A * EF_grass) + (M * EF_manure)
+        
+        # 3. 碳排放量计算 (Carbon Emission)
+        carbon_emission = E_feed + E_enteric + E_energy
+        
+        # 4. 净积分计算
+        net_carbon = carbon_sink - carbon_emission
+        
+        # 5. 用户专属积分计算
+        i_user = net_carbon * W_user * T_hold
+        
+        logger.info(f"计算完成 | 固碳: {carbon_sink:.2f}, 排放: {carbon_emission:.2f}, I_user: {i_user:.2f}")
+        return round(i_user, 4)
 ```bash
 # 1. 克隆仓库
 git clone https://github.com/your-username/CarbonFootprint-CloudRearing.git
