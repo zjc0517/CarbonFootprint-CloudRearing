@@ -1,0 +1,20 @@
+# Web 框架与服务器
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+
+# 数据库 (ORM)
+SQLAlchemy>=2.0.0
+
+# 可视化与数据处理
+streamlit>=1.25.0
+plotly>=5.15.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# 测试与工具
+pytest>=7.4.0
+python-dotenv>=1.0.0
+
+# 区块链交互 (商用增强项)
+web3>=6.10.0
