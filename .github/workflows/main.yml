@@ -1,6 +1,5 @@
 name: CI/CD Pipeline - CarbonFootprint-CloudRearing
 
-# 触发条件：当代码推送到 main 分支，或针对 main 分支发起 Pull Request 时
 on:
   push:
     branches: [ "main" ]
@@ -23,32 +22,37 @@ jobs:
           pip install flake8
       - name: Lint with flake8
         run: |
-          # 检查代码是否符合 PEP8 规范，忽略一些不必要的警告
+          # 检查语法错误和未定义的名称
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-  # 第二阶段：运行单元测试 (Testing)
+  # 第二阶段：运行单元测试 (Testing) - 核心修复部分
   test:
     needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
+          
       - name: Run Pytest
+        env:
+          # 关键点 1：显式告诉 Python 将当前根目录加入搜索路径
+          PYTHONPATH: ${{ github.workspace }}
         run: |
-          # 运行我们在 code/test_carbon_calculator.py 中写的测试
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
-          pytest code/test_carbon_calculator.py
+          # 关键点 2：使用 python -m pytest
+          # 这会启动当前的 python 解释器并将当前目录作为 sys.path 的一部分
+          python -m pytest code/test_carbon_calculator.py
 
-  # 第三阶段：Docker 构建校验 (Build Verification)
+  # 第三阶段：Docker 构建校验
   docker-check:
     needs: test
     runs-on: ubuntu-latest
@@ -57,9 +61,3 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build -t carbon-rearing-app:latest -f deployment/Dockerfile .
-      - name: Verify Image
-        run: |
-          docker images | grep carbon-rearing-app
-
-  # 可选第四阶段：自动发布 (CD)
-  # 如果你有云服务凭证（如 AWS/Azure），可以在这里添加部署逻辑
