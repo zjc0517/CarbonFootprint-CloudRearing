@@ -59,6 +59,37 @@ $$I_{user} = [(A \times EF_{grass} + M \times EF_{manure}) - (E_{feed} + E_{ente
 
 ### 1. 环境准备
 确保已安装 Python 3.8 及以上版本。
+```bash
+# 1. 克隆仓库
+git clone https://github.com/your-username/CarbonFootprint-CloudRearing.git
+cd CarbonFootprint-CloudRearing
+```
+# 2. 创建并激活虚拟环境
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
+
+# 3. 安装依赖
+```bash
+pip install -r requirements.txt
+cp .env.example .env
+```
+# 编辑 .env 文件，填入你的 Web3 配置
+uvicorn code.api:app --reload
+streamlit run visualization/app.py
+##🏗 代码结构
+/code: 包含核心的碳排放计算器、API、测试以及区块链连接存根。
+
+/visualization: 使用 Streamlit 构建的交互式仪表盘代码。
+
+/deployment: 包含用于云服务器部署的 Docker 配置文件。
+##📊 可视化界面截图
+##🐳 部署说明
+本项目支持 Docker 化部署，详见 /deployment 目录下的指引。
+```bash
+bash deployment/deploy.sh
+```
 ### 二、 核心代码实现 (`/code/carbon_calculator.py`)
 计算模块，严格按照要求处理负数和非法数据，确保数据合规：
 
@@ -127,46 +158,5 @@ class CarbonCalculator:
         
         logger.info(f"计算完成 | 固碳: {carbon_sink:.2f}, 排放: {carbon_emission:.2f}, I_user: {i_user:.2f}")
         return round(i_user, 4)
-```bash
-# 1. 克隆仓库
-git clone https://github.com/your-username/CarbonFootprint-CloudRearing.git
-cd CarbonFootprint-CloudRearing
+```
 
-# 2. 创建并激活虚拟环境
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 3. 安装依赖
-pip install -r requirements.txt
-cp .env.example .env
-# 编辑 .env 文件，填入你的 Web3 配置
-uvicorn code.api:app --reload
-streamlit run visualization/app.py
-CarbonFootprint-CloudRearing/
-├── README.md               # 项目说明文档
-├── requirements.txt        # Python 依赖列表
-├── .env                    # 环境变量文件
-├── code/                   # 核心业务逻辑
-│   ├── carbon_calculator.py # 核心算法模块 (含IPCC模型)
-│   ├── api.py              # FastAPI 接口定义
-│   ├── models.py           # 数据库模型
-│   └── utils/              # 工具类 (含Web3区块链交互)
-├── visualization/          # 数据可视化层
-│   └── app.py              # Streamlit 交互式仪表盘
-├── tests/                  # 单元测试
-│   └── test_calculator.py
-└── docs/                   # 补充文档
-cd deployment
-docker-compose up -d --build
-
-### 💡 给您的操作建议：
-
-1.  **文件保存**：请新建一个文本文件，将上述内容完整复制进去，保存为 `README.md`（注意后缀名必须是 `.md`）。
-2.  **环境变量**：请务必创建一个 `.env` 文件（或者先创建 `.env.example`），内容如下，以便代码读取区块链配置：
-    ```env
-    DATABASE_URL=sqlite:///./carbon_rearing.db
-    WEB3_RPC_URL=https://polygon-rpc.com
-    WEB3_PRIVATE_KEY=your_test_private_key_here # 仅用于测试，请勿在生产环境硬编码
-    CONTRACT_ADDRESS=0xYourSmartContractAddress
-    ```
-3.  **美化展示**：建议运行 `streamlit run visualization/app.py`，截取一张包含图表的界面截图，命名为 `demo.png`，然后在 README 的 `## 💼 商业化扩展能力` 上方插入一行 `![Demo](demo.png)`，这样 GitHub 仓库会立刻变得非常直观专业。
